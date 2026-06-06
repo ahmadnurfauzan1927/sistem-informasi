@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Info Cuaca & Kelautan - Tanjung Perak</title>
+    <!-- Link Icon Font (FontAwesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #00509d;
+            --secondary-color: #00296b;
+            --accent-color: #00d4ff;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --success-color: #28a745;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        /* Header & Navbar */
+        header {
+            background: linear-gradient(to right, var(--secondary-color), var(--primary-color));
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo span {
+            font-size: 0.9rem;
+            font-weight: normal;
+            opacity: 0.9;
+        }
+
+        .clock {
+            font-weight: bold;
+            font-size: 1.1rem;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 5px;
+        }
+
+        /* Alert Banner */
+        .alert-banner {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { background-color: #dc3545; }
+            50% { background-color: #b02a37; }
+            100% { background-color: #dc3545; }
+        }
+
+        /* Layout Grid */
+        .container {
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card-header {
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h3 {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .icon-header {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        /* Data Grid inside cards */
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .data-label {
+            color: #666;
+        }
+
+        .data-value {
+            font-weight: bold;
+            color: var(--secondary-color);
+        }
+
+        .unit {
+            font-size: 0.8rem;
+            color: #999;
+            font-weight: normal;
+        }
+
+        /* Specific Section Styles */
+        .notm-section {
+            grid-column: 1 / -1; /* Full width */
+            margin-top: 20px;
+        }
+
+        .notm-list {
+            list-style: none;
+        }
+
+        .notm-item {
+            background: #fff;
+            border-left: 5px solid var(--warning-color);
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .notm-date {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* Status Badge */
+        .badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: white;
+        }
+        .badge-warning { background-color: var(--warning-color); color: #333; }
+        .badge-danger { background-color: var(--danger-color); }
+        .badge-success { background-color: var(--success-color); }
+
+        /* Footer */
+        footer {
+            background: var(--secondary-color);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .logo h1 {
+                font-size: 1.2rem;
+            }
+            .logo span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <h1><i class="fa-solid fa-ship"></i> Sistem Info Maritim</h1>
+            <br>
+            <span>Pelayanan Cuaca Tanjung Perak</span>
+        </div>
+        <div class="clock" id="clock">00:00:00</div>
+    </header>
+
+    <!-- Warning Banner -->
+    <div class="alert-banner">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        PERINGATAN CUACA EKSTREM: ANCAMAN GELOMBANG TINGGI (HIGH WAVE WARNING) - KETINGGIAN GELOMBANG ESTIMASI 4-6 METER
+    </div>
+
+    <div class="container">
+
+        <!-- 1. METEOROLOGI (Atmosfer) -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-temperature-half"></i> Parameter Atmosfer</h3>
+                <i class="fa-solid fa-cloud icon-header"></i>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Suhu Udara</span>
+                <span class="data-value" id="temp">28.5</span> <span class="unit">°C</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Kelembapan Relatif</span>
+                <span class="data-value" id="hum">82</span> <span class="unit">%</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Tekanan Permukaan</span>
+                <span class="data-value" id="pres">1012</span> <span class="unit">hPa</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Titik Embun (Dew Point)</span>
+                <span class="data-value">24</span> <span class="unit">°C</span>
+            </div>
+        </div>
+
+        <!-- 2. ANGIN & PRESIPITASI -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-wind"></i> Angin & Presipitasi</h3>
+                <i class="fa-solid fa-cloud-rain icon-header"></i>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Kecepatan Angin</span>
+                <span class="data-value" id="wind-speed">15</span> <span class="unit">Knot</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Arah Angin</span>
+                <span class="data-value" id="wind-dir">Timur Laut</span> <span class="unit">(045°)</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Gust (Angin Kembah)</span>
+                <span class="data-value">22</span> <span class="unit">Knot</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Curah Hujan</span>
+                <span class="data-value" id="rain">0.0</span> <span class="unit">mm</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Jarak Pandang</span>
+                <span class="data-value" id="vis">10</span> <span class="unit">km</span>
+            </div>
+        </div>
+
+        <!-- 3. GELOMBANG & PASANG SURUT -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-water"></i> Gelombang & Pasang Surut</h3>
+                <i class="fa-solid fa-waves icon-header"></i>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Tinggi Gelombang Signifikan (Hs)</span>
+                <span class="data-value" id="wave-height">1.2</span> <span class="unit">m</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Periode Gelombang (Tp)</span>
+                <span class="data-value" id="wave-period">6</span> <span class="unit">detik</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Arah Gelombang Datang</span>
+                <span class="data-value">Barat Laut</span> <span class="unit">(315°)</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Status Pasang</span>
+                <span class="badge badge-success">Pasang Naik</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Elevasi Muka Air Laut</span>
+                <span class="data-value" id="tide-level">2.5</span> <span class="unit">m (dari LLW)</span>
+            </div>
+        </div>
+
+        <!-- 4. ARUS LAUT & PARAMETER AIR -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-water-ladder"></i> Arus Laut & Fisika Laut</h3>
+                <i class="fa-solid fa-compass icon-header"></i>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Kecepatan Arus Permukaan</span>
+                <span class="data-value" id="current-speed">0.8</span> <span class="unit">Knot</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Arah Arus</span>
+                <span class="data-value">Barat</span> <span class="unit">(270°)</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Suhu Permukaan Laut (SST)</span>
+                <span class="data-value" id="sst">29.0</span> <span class="unit">°C</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Salinitas</span>
+                <span class="data-value" id="salinity">33</span> <span class="unit">PSU</span>
+            </div>
+        </div>
+
+        <!-- 5. NOTICE TO MARINERS (NOTM) -->
+        <div class="card notm-section">
+            <div class="card-header">
+                <h3><i class="fa-solid fa-bullhorn"></i> Notice to Mariners (NOTM)</h3>
+                <button style="padding:5px 10px; background:var(--primary-color); color:white; border:none; border-radius:4px; cursor:pointer;">Lihat Semua</button>
+            </div>
+            <div class="notm-list">
+                <div class="notm-item">
+                    <span class="notm-date">23 Oktober 2023</span>
+                    <p><strong>Peringatan Navigasi:</strong> Terdapat proses pengerjaan <em>dredging</em> (penggerukan) di alur pelayaran pelabuhan utama (Km 0 - Km 5). Kapal dengan draft > 7m harap gunakan jalan alternatif atau tunggu instruksi pandu.</p>
+                </div>
+                <div class="notm-item">
+                    <span class="notm-date">20 Oktober 2023</span>
+                    <p><strong>Perubahan Rambu Suar:</strong> Rambu suar Mercusuar Tanjung Perak sedang dalam keadaan lampu padam (Light Extinguished). Gangguan listrik sedang dalam proses perbaikan.</p>
+                </div>
+                <div class="notm-item">
+                    <span class="notm-date">15 Oktober 2023</span>
+                    <p><strong>(通知)/Latihan Militer:</strong> Latihan militer akan berlangsung di Sektor Utara pelabuhan pada tanggal 25 Oktober. <em>Exclusion zone</em> diterapkan, harap berhati-hati.</p>
+                </div>
+                <div class="notm-item">
+                    <span class="notm-date">10 Oktober 2023</span>
+                    <p><strong>Perubahan Alur Pelayaran:</strong> Perihal penyempitan alur di channel nomor 2 karena adanya sedimen longsoran dari kegiatan bongkar muat barang cyclic. Marka suar dipindahkan 50 meter ke arahstarboard.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2023 Sistem Informasi Cuaca Pelabuhan Tanjung Perak. All Rights Reserved.</p>
+        <p>Sumber Data:BMKG / Dishub Tanjung Perak | Diembangkan untuk keperluan operasional pelayaran</p>
+    </footer>
+
+    <script>
+        // Fungsi untuk Jam Digital
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('id-ID', { hour12: false });
+            document.getElementById('clock').innerText = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Fungsi simulasi perubahan data acak (Database Simulation)
+        // Data ini akan berubah-ubah setiap 3 detik agar terlihat seperti sistem real-time
+        function updateData() {
+            // Variasi bilangan acak helper
+            const randomVal = (base, variance) => (base + (Math.random() * variance - variance/2)).toFixed(1);
+
+            // Update Meteorology (Atmosfer)
+            document.getElementById('temp').innerText = randomVal(28, 2);
+            document.getElementById('hum').innerText = Math.floor(Math.random() * 10) + 78;
+            document.getElementById('pres').innerText = Math.floor(Math.random() * 10) + 1008;
+
+            // Update Angin
+            document.getElementById('wind-speed').innerText = Math.floor(Math.random() * 10) + 12;
+            document.getElementById('rain').innerText = randomVal(0, 0);
+            document.getElementById('vis').innerText = (Math.random() * 2 + 8).toFixed(1);
+
+            // Update Gelombang
+            document.getElementById('wave-height').innerText = randomVal(1.5, 0.5);
+            document.getElementById('wave-period').innerText = Math.floor(Math.random() * 4) + 5;
+            document.getElementById('tide-level').innerText = randomVal(2.2, 0.6);
+
+            // Update Arus & Fisika Laut
+            document.getElementById('current-speed').innerText = randomVal(0.7, 0.4);
+            document.getElementById('sst').innerText = randomVal(29, 1);
+            document.getElementById('salinity').innerText = Math.floor(Math.random() * 3) + 32;
+        }
+        
+        // Jalankan update data setiap 3 detik
+        setInterval(updateData, 3000);
+    </script>
+
+</body>
+</html>
